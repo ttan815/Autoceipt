@@ -12,10 +12,11 @@ from flask_cors import CORS
 
 load_dotenv()
 app = Flask(__name__)
+CORS(app)
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+jwt = JWTManager(app)
 
-CORS(app)
 class Base(DeclarativeBase):
     pass
 
@@ -70,11 +71,32 @@ def register():
             else:
                 if User.query.filter_by(email=f'{email}').first() != None:
                     return jsonify({"status" : "User already exists"}), 403
-                user = User(email=email, name=name, password = generate_password_hash(password=password)) 
+                user = User(email=email, name=name, password = generate_password_hash(password=password))  # Hashes the user's password for creating a User object
+
+                #Generate User's Token to auto-login after registration
                 db.session.add(user)
                 db.session.commit()
-                return jsonify({"status" : True})
+                access_token = create_access_token(identity=user.id)
+                return jsonify({"access_token": access_token,"userID" : user.id, "username" : user.name, "email" : user.email})
         else:
             return jsonify({"error": "Empty receipt data"}), 400
+        
+@app.route("/login", methods=["GET","POST"])
+def login():
+    if(request.method == "GET"):
+        return jsonify({"API": "Login (GET)"}), 403
+    if(request.method == "POST"):
+        userMetaData = request.get_json()
+        user = User.query.filter_by(email=f'{userMetaData.get("email")}').first()
+        if user != None:
+            if check_password_hash(user.password, userMetaData.get("password")):
+                access_token = create_access_token(identity=user.id)
+                return jsonify({"access_token": access_token,"userID" : user.id, "username" : user.name, "email" : user.email})
+
+            else:
+                return jsonify({"status" : f"Incorrect Password"}), 403
+        else:
+            return jsonify({"status" : f"User not found under email: {userMetaData.get("email")}"}), 403
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
