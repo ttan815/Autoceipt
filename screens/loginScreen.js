@@ -1,0 +1,184 @@
+import React from 'react';
+import { StyleSheet, Text, View, SafeAreaView, TextInput, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useDeviceOrientation } from '@react-native-community/hooks';
+import { StatusBar } from 'expo-status-bar';
+import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export default function LoginScreen() {
+  const navigation = useNavigation();
+  const deviceOrientation = useDeviceOrientation();
+  const windowWidth = Dimensions.get('window').width;
+  const windowHeight = Dimensions.get('window').height;
+
+  const buttonWidth = Math.min(Math.max(windowWidth * 0.6, 200), 400);
+  const buttonHeight = Math.min(Math.max(windowHeight * 0.06, 48), 64);
+
+  const appLogoWidth = windowWidth*.28
+  const titleFontSize = Math.min(Math.max(windowWidth * 0.08, 28), 36); 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const loginAccount = async () =>{
+    const response = await fetch('http://localhost:5001/login', {
+    method: 'POST',
+    headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        "email": email,
+        "password": password,
+    }),
+    });
+    if(response.ok){
+        const data = await response.json()
+        if(data.status){
+            await AsyncStorage.setItem("accessToken",data.access_token)
+            navigation.navigate('MainScreen')
+        }
+        else{
+            alert("Invalid email or password. Please try again.");
+        }
+    }
+    else {
+        // Handle known errors
+        alert("An error occured, please try again later.");
+    }
+
+  }
+  return (
+      <SafeAreaView style={styles.container}>
+      <View style={styles.viewContainer}>
+        <Image
+          source={require('../assets/autoceiptIcon.png')} 
+          style={[{ width: appLogoWidth, height: appLogoWidth }, styles.appLogo]}
+        />
+        <Text style={[styles.appTitle,{fontSize:titleFontSize}]}>Autoceipt</Text>
+          <TextInput
+            style={[styles.loginTop,{width:buttonWidth, height:buttonHeight}]}
+            placeholder='Email'
+            autoCapitalize="none"
+            placeholderTextColor="#555"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <TextInput
+            style={[styles.loginBottom,{width:buttonWidth,height:buttonHeight}]}
+            placeholder='Password'
+            placeholderTextColor="#555"
+            secureTextEntry={true}
+            value={password}
+            onChangeText={setPassword}
+          />
+        <TouchableOpacity 
+         activeOpacity={0.6}
+         onPress={loginAccount}
+         
+         style={[styles.loginButton, { width: buttonWidth, height: buttonHeight }]}>
+    <Text style={styles.buttonText}>Login</Text>
+  </TouchableOpacity>
+  
+  <TouchableOpacity activeOpacity={0.6} style={[styles.forgotPasswordButton, { width: buttonWidth, height: buttonHeight }]}>
+    <Text style={{fontSize:'16', fontWeight:'300'}}>Forgot Password?</Text>
+  </TouchableOpacity>
+  
+    <TouchableOpacity
+    activeOpacity={0.6}
+    onPress={() => navigation.navigate('SignUp')}
+    style={[styles.signUpButton, { width: buttonWidth, height: buttonHeight }]}
+    >
+    <Text style={styles.buttonText}>Sign Up</Text>
+    </TouchableOpacity>
+
+      </View>
+      <View>
+        <StatusBar style="auto" />
+      </View>
+      </SafeAreaView>
+    );
+  }
+
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#F9FAFB',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    viewContainer:{
+      flex:1,
+      flexDirection:'column',
+      alignItems:'center',
+      justifyContent:'center'
+    },
+    appLogo:{
+      position:"relative",
+      top:-130,
+    },
+    appTitle:{
+      // backgroundColor:'red',
+      position:'relative',
+      top:-113,
+      fontWeight:'600',
+      textAlign:'center',
+    },
+    fontColor:{
+      color:"#1C1C1E"
+    },
+      loginButton: {
+      alignItems: 'center',
+      backgroundColor: '#FDFBF9',
+      padding: 10,
+      justifyContent: 'center',
+      position:'relative',
+      top:-40,
+      borderWidth:1,
+      borderRadius:15
+    },
+    signUpButton:{
+      alignItems: 'center',
+      // backgroundColor: '#0A84FF',
+      padding: 10,
+      justifyContent: 'center',
+      position:'relative',
+      top:15,
+      borderWidth:1,
+      borderRadius:15
+    },
+    forgotPasswordButton:{
+      alignItems: 'center',
+      padding: 10,
+      color:'#000000',
+      justifyContent: 'center',
+      position:'relative',
+      top:-40,
+      fontWeight:'bold',
+    },
+    buttonText: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+    loginTop: {
+      borderColor:'#B0B0B0',
+      borderWidth:2,
+      padding:8,
+      borderBottomWidth:0,
+      borderTopLeftRadius:10,
+      borderTopRightRadius:10,
+      position:'relative',
+      top:-65,
+    },
+  
+    loginBottom: {
+      borderColor:'#B0B0B0',
+      borderWidth:2,
+      padding:8,
+      borderBottomLeftRadius:10,
+      borderBottomRightRadius:10,
+      position:'relative',
+      top:-65,
+    },
+  });
