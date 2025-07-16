@@ -6,7 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import LoginScreen from './screens/loginScreen';
 import SignUpScreen from './screens/signUpScreen';
 import MainScreen from './screens/mainScreen';
-
+import ScanScreen from './screens/scanScreen'
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -34,6 +34,14 @@ export default function App() {
           options={{
             animation:'none'
           }}
+        />
+        <Stack.Screen
+          name="Scan"
+          component={ScanScreen}
+          options={{
+            animation:'none'
+          }}
+
         />
       </Stack.Navigator>
     </NavigationContainer>

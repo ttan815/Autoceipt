@@ -87,7 +87,7 @@ useFocusEffect(
           navigation.navigate("Login");
         } else {
           const data = await response.json();
-          console.log("Token is valid:", data.ValidToken);
+          // console.log("Token is valid:", data.ValidToken);
         }
       } catch (err) {
         console.error("Error checking token:", err);
@@ -234,7 +234,7 @@ return (
             if (hasPermissionForCamera) {
               const hasPermissionForMediaLibrary = await ensureMediaLibraryPermission();
               if (hasPermissionForMediaLibrary){
-                navigation.navigate("MainScreen")
+                navigation.navigate("Scan")
               }
             }
             }}
