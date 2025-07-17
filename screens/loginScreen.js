@@ -20,7 +20,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const loginAccount = async () =>{
-    const response = await fetch('http://localhost:5001/login', {
+    const response = await fetch('http://10.0.0.197:5001/login', {
     method: 'POST',
     headers: {
         Accept: 'application/json',

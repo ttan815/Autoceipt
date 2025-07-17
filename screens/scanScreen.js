@@ -1,6 +1,6 @@
 import React from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { StyleSheet, Text, View, SafeAreaView, TextInput, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TextInput, TouchableOpacity, Image, Dimensions, Button } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useDeviceOrientation } from '@react-native-community/hooks';
 
@@ -10,88 +10,40 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme , Linking, Alert} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function ScanScreen() {
-  const navigation = useNavigation();
-    useFocusEffect(
-    React.useCallback(() => {
-        let intervalId = null;
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 
-        const checkToken = async () => {
-        const token = await AsyncStorage.getItem("accessToken");
+export default function ScanCameraScreen() {
+  const [facing, setFacing] = useState('back');
+  const [permission, requestPermission] = useCameraPermissions();
 
-        if (!token) {
-            alert("Your session has expired. Please log in again to continue.");
-            navigation.navigate("Login");
-            return;
-        }
-
-        try {
-            const response = await fetch('http://localhost:5001/checkToken', {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            });
-
-            if (!response.ok) {
-            alert("Your session has expired. Please log in again to continue.");
-            navigation.navigate("Login");
-            } else {
-            const data = await response.json();
-            // console.log("Token is valid:", data.ValidToken);
-            }
-        } catch (err) {
-            console.error("Error checking token:", err);
-            navigation.navigate("Login");
-        }
-        };
-        checkToken();
-        
-        intervalId = setInterval(() => {
-        checkToken();
-        }, 30000);
-
-        return () => {
-        clearInterval(intervalId);
-        };
-    }, [navigation])
+  if (!permission) return <View />;
+  if (!permission.granted) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.message}>Camera access is required</Text>
+        <Button onPress={requestPermission} title="Grant Permission" />
+      </View>
     );
-  const handleTakePhoto = async () => {
-    // Insert camera logic here
-    console.log("Taking a photo...");
-  };
+  }
 
-  const handleUploadPhoto = async () => {
-    // Insert upload logic here
-    console.log("Uploading from gallery...");
-  };
+  function toggleCameraFacing() {
+    setFacing((current) => (current === 'back' ? 'front' : 'back'));
+  }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Scan Receipt</Text>
+    <View style={{ flex: 1 }}>
+    <CameraView style={{ flex: 1 }} facing={facing} />
 
-        <TouchableOpacity style={styles.takePhotoBtn} onPress={handleTakePhoto}>
-          <Image
-            source={require('../assets/cameraIcon.png')}
-            style={styles.icon}
-          />
-          <Text style={styles.buttonText}>Take a Photo</Text>
+    <View style={styles.overlay}>
+        <TouchableOpacity onPress={toggleCameraFacing}>
+        <Text style={styles.text}>Flip</Text>
         </TouchableOpacity>
+    </View>
+    </View>
 
-        <TouchableOpacity style={styles.uploadBtn} onPress={handleUploadPhoto}>
-          <Image
-            source={require('../assets/galleryIcon.png')}
-            style={styles.icon}
-          />
-          <Text style={styles.buttonText}>Upload from Gallery</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
   );
 }
+
 
 
 const styles = StyleSheet.create({
@@ -140,5 +92,18 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#1C1C1E',
   },
+  overlay: {
+  position: 'absolute',
+  bottom: 40,
+  alignSelf: 'center',
+  backgroundColor: 'rgba(0,0,0,0.4)',
+  padding: 12,
+  borderRadius: 8,
+},
+text: {
+  color: 'white',
+  fontSize: 18,
+}
+
 });
 

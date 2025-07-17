@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme , Linking, Alert} from 'react-native';
+import { Camera, CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
@@ -73,7 +74,7 @@ useFocusEffect(
       }
 
       try {
-        const response = await fetch('http://localhost:5001/checkToken', {
+        const response = await fetch('http://10.0.0.197:5001/checkToken', {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
