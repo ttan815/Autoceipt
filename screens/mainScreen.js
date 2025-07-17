@@ -35,7 +35,7 @@ export default function SignUpScreen() {
   scheme === 'light'
     ? require('../assets/homeIcon.png')
     : require('../assets/homeIcon.png');
-    const receiptIcon =
+  const receiptIcon =
   scheme === 'light'
     ? require('../assets/receiptIcon.png')
     : require('../assets/receiptIcon.png');

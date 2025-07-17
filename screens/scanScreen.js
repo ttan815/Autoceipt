@@ -13,30 +13,45 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 
 export default function ScanCameraScreen() {
-  const [facing, setFacing] = useState('back');
-  const [permission, requestPermission] = useCameraPermissions();
+    const [facing, setFacing] = useState('back');
+    const [permission, requestPermission] = useCameraPermissions();
+    const insets = useSafeAreaInsets();
+    const windowHeight = Dimensions.get('window').height;
+    const scheme = useColorScheme();
+    const rotateCameraIcon =
+    scheme === 'light'
+    ? require('../assets/rotateCameraIcon.png')
+    : require('../assets/rotateCameraIcon.png');
+    const cameraCaptureIcon =
+    scheme === 'light'
+    ? require('../assets/cameraCaptureIcon.png')
+    : require('../assets/cameraCaptureIcon.png');
 
-  if (!permission) return <View />;
-  if (!permission.granted) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.message}>Camera access is required</Text>
-        <Button onPress={requestPermission} title="Grant Permission" />
-      </View>
-    );
-  }
+    if (!permission) return <View><Text>Camera access required to scan</Text></View>;
+    if (!permission.granted) {
+        return (
+        <View style={styles.container}>
+            <Text style={styles.message}>Camera access is required</Text>
+            <Image></Image>
+            <Button onPress={requestPermission} title="Grant Permission" />
+        </View>
+        );
+    }
 
-  function toggleCameraFacing() {
-    setFacing((current) => (current === 'back' ? 'front' : 'back'));
-  }
+    function toggleCameraFacing() {
+        setFacing((current) => (current === 'back' ? 'front' : 'back'));
+    }
 
   return (
     <View style={{ flex: 1 }}>
     <CameraView style={{ flex: 1 }} facing={facing} />
 
-    <View style={styles.overlay}>
+    <View style={[styles.overlay,styles.cameraUI]}>
         <TouchableOpacity onPress={toggleCameraFacing}>
-        <Text style={styles.text}>Flip</Text>
+                <Image source={rotateCameraIcon} style={{width:'64', height:'64', backgroundColor:'red'}}></Image>
+        </TouchableOpacity>
+        <TouchableOpacity>
+                <Image source={cameraCaptureIcon} style={{width:'64', height:'64', }}></Image>
         </TouchableOpacity>
     </View>
     </View>
@@ -62,6 +77,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 40,
   },
+  cameraUI:{
+    flexDirection:'row',
+    alignItems:'center',
+    backgroundColor:'blue',
+  },
   takePhotoBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -72,7 +92,7 @@ const styles = StyleSheet.create({
     width: '90%',
     marginBottom: 20,
   },
-  uploadBtn: {
+  gallaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#E8FAE9',
@@ -93,16 +113,20 @@ const styles = StyleSheet.create({
     color: '#1C1C1E',
   },
   overlay: {
-  position: 'absolute',
-  bottom: 40,
-  alignSelf: 'center',
-  backgroundColor: 'rgba(0,0,0,0.4)',
-  padding: 12,
-  borderRadius: 8,
+    lex:1,
+    justifyContent:'center',
+    position: 'absolute',
+    bottom: 40,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    padding: 12,
+    borderRadius: 8,
+    width:'75%'
 },
 text: {
   color: 'white',
   fontSize: 18,
+  textAlign:'center',
 }
 
 });
