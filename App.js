@@ -7,6 +7,8 @@ import LoginScreen from './screens/loginScreen';
 import SignUpScreen from './screens/signUpScreen';
 import MainScreen from './screens/mainScreen';
 import ScanScreen from './screens/scanScreen'
+import EditScreen from './screens/editScreen'
+import ViewScreen from './screens/viewReceiptScreen'
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -38,6 +40,21 @@ export default function App() {
         <Stack.Screen
           name="Scan"
           component={ScanScreen}
+          options={{
+            animation:'none'
+          }}
+        />
+        <Stack.Screen
+          name="Edit"
+          component={EditScreen}
+          options={{
+            animation:'none'
+          }}
+
+        />
+        <Stack.Screen
+          name="View"
+          component={ViewScreen}
           options={{
             animation:'none'
           }}

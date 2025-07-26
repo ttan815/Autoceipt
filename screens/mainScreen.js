@@ -4,7 +4,7 @@ import { StyleSheet, Text, View, SafeAreaView, TextInput, TouchableOpacity, Imag
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useDeviceOrientation } from '@react-native-community/hooks';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme , Linking, Alert} from 'react-native';
@@ -60,6 +60,7 @@ export default function SignUpScreen() {
     const [statusCameraAccess, requestPermissionCamera] = ImagePicker.useCameraPermissions();
     const [statusMediaLibraryAccess, requestPermissionMediaLibrary] = ImagePicker.useMediaLibraryPermissions();
 
+    const [receipts, setReceipts] = useState([]);
 useFocusEffect(
   React.useCallback(() => {
     let intervalId = null;
@@ -186,31 +187,69 @@ const ensureMediaLibraryPermission = async () => {
 
   return true;
 };
+
+useEffect(()=>{
+  const fetchReceipts = async () => {
+    const token = await AsyncStorage.getItem("accessToken");
+
+    const response = await fetch('http://10.0.0.197:5001/getreceipts', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const data = await response.json();
+  console.log(`This is what we got: ${JSON.stringify(data)}`);
+  setReceipts(data);
+  };
+  fetchReceipts();
+},[])
+
+
+const redirectToReceipt = async (item)=>{
+
+    const token = await AsyncStorage.getItem("accessToken");
+
+    const response = await fetch('http://10.0.0.197:5001/getimageurl', {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ filepath: item.filepath })
+    });
+    const data = await response.json();
+
+    navigation.navigate("View", { imageURL: data.url, "data":  item});      
+}
+
+
+
 return (
     <SafeAreaView style={styles.container}>
     <View style={styles.viewContainer}>
         <Text style={[styles.appTitle,{fontSize:titleFontSize}, styles.appLogo]}>Autoceipts</Text>
     <View style={{ flexDirection: 'row', marginTop: 15 }}>
     </View>
-    <View style={[styles.viewContainer, styles.recentReceiptsContainer]}>
-        <Text style={{fontSize:recentReceiptFontSize}}>Most Recent Receipts</Text>
-        <View style={styles.recentReceiptItem}> 
-            <View>
-            <Text style={{fontSize:wordFontSize, fontWeight:'600'}}>Cosoqweiuq...</Text>
-            <Text style={{fontSize:wordFontSize}}>08-15-2003</Text>
-            <Text style={{fontSize:wordFontSize, fontWeight:'500'}}>$15.00</Text>
-            </View>
-            {/* <View style={{ flex: .8 }} /> */}
-            <View style={styles.recentReceiptItemDetail}>
-            <TouchableOpacity>
-                <Text style={[{fontSize:wordFontSize}]}>
-                Details
-                </Text>
-            </TouchableOpacity>
-            </View>
-        </View>
-        
+<View style={[styles.viewContainer, styles.recentReceiptsContainer]}>
+  <Text style={{fontSize:recentReceiptFontSize}}>Most Recent Receipts</Text>
+
+  {receipts.map(item => (
+    <View key={item.id} style={styles.recentReceiptItem}>
+      <View>
+        <Text style={{ fontSize: wordFontSize, fontWeight: '600' }}>{item.storeName}</Text>
+        <Text style={{ fontSize: wordFontSize }}>{item.date}</Text>
+        <Text style={{ fontSize: wordFontSize, fontWeight: '500' }}>${item.total}</Text>
+      </View>
+      <View style={styles.recentReceiptItemDetail}>
+        <TouchableOpacity onPress={() => redirectToReceipt(item)}>
+          <Text style={{ fontSize: wordFontSize }}>Details</Text>
+        </TouchableOpacity>
+      </View>
     </View>
+  ))}
+
+</View>
+
     <View style={[styles.navBarContainer, { backgroundColor:'gray',height:windowHeight*.08}]}>
 
     <TouchableOpacity style={{ flex: 1, alignItems: 'center', textAlign:"center" }} onPress={() => navigation.navigate('Login')}>
